@@ -111,44 +111,64 @@ dashboardPage(skin = "green",
                                     "Select the plot type",
                                     choices = c("Histogram", "Scatter", "Box_plot"), selected = "Histogram"),
                                 conditionalPanel(condition="input.plot_type == 'Histogram'",
-                                    selectInput("hist_var", "Select a Variable for the Histogram",
+                                    selectizeInput("hist_var", "Select a Variable for the Histogram",
                                                 choices = var_names,
                                                 selected = "Cement"),
                                     checkboxInput("hist_color_code", "Color code this Histogram by compressive strength?"),
                                     checkboxInput("hist_density", "Overlay a density to this Histogram?"),
                                     sliderInput("nBins", "Select the number of bins for this Histogram",
-                                                min=10, max=75, step=1, value=30),
+                                                min=10, max=100, step=1, value=20),
                                     conditionalPanel(condition="input.hist_density == 1",
                                         sliderInput("alpha_value", "Select Opacity",
-                                                    min=0.1, max=1, step=0.05, value=0.7),
+                                                    min=0.1, max=1, step=0.05, value=0.5),
                                         sliderInput("adjust_value", "Select an Adjustment Value",
                                                     min=0.1, max=1, step=0.05, value=0.5))),
                                 conditionalPanel(condition="input.plot_type == 'Scatter'",
-                                    selectInput("xScatter", "Choose an X axis",
+                                    selectizeInput("xScatter", "Choose an X axis",
                                                 choices = var_names,
                                                 selected = "Cement"),
-                                    selectInput("yScatter", "Choose a Y axis",
+                                    selectizeInput("yScatter", "Choose a Y axis",
                                                 choices = var_names,
                                                 selected = "Cement"),
                                                 checkboxInput("scatter_color_code", "Color code this Scatter Plot by compressive strength?"),
                                                 checkboxInput("scatter_trend", "Add a trendline?")),
                                 conditionalPanel(condition="input.plot_type == 'Box_plot'",
-                                    selectInput("box_var", "Select a Variable for this Boxplot",
+                                    selectizeInput("box_var", "Select a Variable for this Boxplot",
                                                 choices = var_names,
                                                 selected="Cement"),
                                                 checkboxInput("group_box", "Group the Boxplot by compressive strength?"))
                             ), #End sidebarPanel
                                      
                                 mainPanel(
-                                    box(width = 12, 
+                                    box(width = 10, 
                                         plotlyOutput("summary_plot")
                                     )    
                                 ) #End mainPanel
                             ) #End sidebar layout
-                )#End Tab Panel
-    
+                ),#End Tab Panel
+                
+                #Tab for Numerical Summaries
+                tabPanel("Numerical Summaries",
+                    sidebarLayout(
+                             
+                        #Sidebar for selecting type of numerical summary
+                            sidebarPanel(
+                                 selectizeInput("numerical_var", "Select a variable for numerical summary",
+                                             choices = var_names, selected="Cement"),
+                                 checkboxInput("group_by_CompressiveStrength", "Group this summary by compressive strength")
+                             ),
+                             
+                             #Main panel
+                             mainPanel(
+                                 box(width = 12, 
+                                     tableOutput("numerical_summary") 
+                                 )  
+                             )
+                         ) #End sidebar layout
+                ) #End Tab Panel
             )#End tabsetPanel
             ),#End Data Exploration Page Content        
+            
             
             #Modeling Page Content
             tabItem(tabName = "model",
