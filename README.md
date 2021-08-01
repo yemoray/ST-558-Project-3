@@ -4,9 +4,10 @@ The __Data__ page contains the dataset to be used for analyses. The data can be 
 
 The list of codes needed to run the app are `shiny`,`shinydashboard`,`shinybusy`,`tidyverse`, `ggplot2`,`DT`,`readr`,`knitr`,`dplyr`,`gbm`,`randomForest`,`caret`,`tree`, `plotly`, and `class`.
 
-## Code needed to install the packages used:
+## Code needed to install and load the packages used:
 ```{r,eval = T}
 packages <- c("shiny","shinydashboard","shinybusy","tidyverse", "ggplot2","DT","readr","knitr","dplyr","gbm","randomForest","caret","tree", "plotly","class","png")
+install.packages(packages)
 lapply(packages, library, character.only = TRUE)
 ```
 
