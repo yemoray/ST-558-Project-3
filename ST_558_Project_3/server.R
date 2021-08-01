@@ -112,7 +112,8 @@ shinyServer(function(input, output, session) {
           geom_boxplot(color="#56B4E9")
         ggplotly(g)
       }
-    }   
+    }
+    
   })  
 
   #Create Numerical Summaries outputs

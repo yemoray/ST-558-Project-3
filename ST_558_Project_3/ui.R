@@ -19,6 +19,8 @@ data_Test <- data[test, ]
 
 var_names = names(data %>% select(-Concrete_Comp_strength_cat))
 
+not_sel <- "Not Selected"
+
 modelChoices = c("Multiple Linear Regression", "Bagged Tree", "Random Forest")
 
 
@@ -80,7 +82,7 @@ dashboardPage(skin = "green",
             #Data Page Content
             tabItem(tabName = "data", strong(em(h2("Data Table"))),
                     
-                fluidRow(box(title="What's in this page?", solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, width = 10, background="blue",
+                fluidRow(box(title="What's in this page?", solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE, width = 10, background="blue",
                     h4("The data table is shown below. You can subset the table to show the levels of the different variables that contribute to high compressive strength or low compressive strength."),
                     h4("These subsets can also be downloaded as .csv files by clicking the download button.")),
                              
@@ -93,9 +95,10 @@ dashboardPage(skin = "green",
             #Data Exploration Page Content
             tabItem(tabName = "exploration",strong(em(h2("Graphical and Numeric Summaries"))),
                     
-                    fluidRow(box(title="What's in this page?", solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, width = 10, background="blue",
+                    fluidRow(box(title="What's in this page?", solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE, width = 10, background="blue",
                                  h4("The graphical and numeric summaries are shown below. There is a choice of plot type and variables for the different plots."),
-                                 h4("These plots can also be interacted with and downloaded as .png files by hovering over the top right of the plots and making a selection from the plotly options.")),
+                                 h4("These plots can also be interacted with and downloaded as .png files by hovering over the top right of the plots and making a selection from the plotly options."),
+                                 h4("The numerical summaries include the minimum, maximum, IQR, mean and standard deviation. You have achoice of seeing the summaries grouped by the compressive strength.")),
                              
                              ),
                              
@@ -107,15 +110,15 @@ dashboardPage(skin = "green",
                                      
                             #Sidebar for selecting type of plot
                             sidebarPanel(
-                                selectInput("plot_type", 
+                                selectizeInput("plot_type", 
                                     "Select the plot type",
-                                    choices = c("Histogram", "Scatter", "Box_plot"), selected = "Histogram"),
+                                    choices = c(not_sel,"Histogram", "Scatter", "Box_plot"), selected = not_sel),
                                 conditionalPanel(condition="input.plot_type == 'Histogram'",
                                     selectizeInput("hist_var", "Select a Variable for the Histogram",
-                                                choices = var_names,
+                                                choices = c(not_sel,var_names),
                                                 selected = "Cement"),
-                                    checkboxInput("hist_color_code", "Color code this Histogram by compressive strength?"),
-                                    checkboxInput("hist_density", "Overlay a density to this Histogram?"),
+                                    checkboxInput("hist_color_code", "Color code by compressive strength"),
+                                    checkboxInput("hist_density", "Overlay a density"),
                                     sliderInput("nBins", "Select the number of bins for this Histogram",
                                                 min=10, max=100, step=1, value=20),
                                     conditionalPanel(condition="input.hist_density == 1",
@@ -125,18 +128,18 @@ dashboardPage(skin = "green",
                                                     min=0.1, max=1, step=0.05, value=0.5))),
                                 conditionalPanel(condition="input.plot_type == 'Scatter'",
                                     selectizeInput("xScatter", "Choose an X axis",
-                                                choices = var_names,
+                                                   choices = var_names,
                                                 selected = "Cement"),
                                     selectizeInput("yScatter", "Choose a Y axis",
-                                                choices = var_names,
-                                                selected = "Cement"),
-                                                checkboxInput("scatter_color_code", "Color code this Scatter Plot by compressive strength?"),
-                                                checkboxInput("scatter_trend", "Add a trendline?")),
+                                                   choices = var_names,
+                                                selected = "Concrete_compressive_strength"),
+                                                checkboxInput("scatter_color_code", "Color code  by compressive strength"),
+                                                checkboxInput("scatter_trend", "Add a trendline")),
                                 conditionalPanel(condition="input.plot_type == 'Box_plot'",
                                     selectizeInput("box_var", "Select a Variable for this Boxplot",
-                                                choices = var_names,
+                                                   choices = var_names,
                                                 selected="Cement"),
-                                                checkboxInput("group_box", "Group the Boxplot by compressive strength?"))
+                                                checkboxInput("group_box", "Group by compressive strength")) 
                             ), #End sidebarPanel
                                      
                                 mainPanel(
@@ -176,7 +179,71 @@ dashboardPage(skin = "green",
                         
                     #Modeling Information tab
                     tabPanel("Modeling Info",
+                        tabsetPanel(
+                                 tabPanel("Multiple Linear Regression",
+                                 h4("Linear Regression modeling is one of the supervised learning methods where the output is known, and the goal is to establish a function that best approximates the relationship between desired outputs and the provided sample data. Specifically, linear regression accomplishes
+                                 this by learning a model that best fits the linear relationship between the predictor and response variables.The model is fit by minimizing the sum of squared residuals (difference between the observed and predicted responses). Multiple Linear Regression (MLR) has more than one
+                                 predictor, and the although relationship between predictors and response remains linear in terms of the model parameters, the MLR model could contain interaction, quadratic and polynomial terms.An example of an MLR below is below:"),
+                                 br(),
+                                 withMathJax(
+                                     helpText('$$y_{i}=\\beta_{0}+\\beta_{1}x_{1}+...+\\beta_{p}x_{p}+\\epsilon$$')
+                                 ),
+                                 br(),
+                                 h4("The beta terms are regression coefficients (the exception is beta zero, the intercept), the x terms are the independent variables,and y is the predicted value of the dependent variable."),
+                                 h4("Underlying assumptions for the linear regression model are:"),
+                                 h4("Linearity: The model is linear in model parameters, this assumption can be checked using histogram or Q-Q plots"),
+                                 h4("Normality: The predictor and response variables are multivariate normal"),
+                                 h4("Multicollinearity: There is little to no multicollinearity among the predictor variables. (can be checked using Variance Inflation Factor"),
+                                 h4("Homoscedasticity: Residuals are randomly distributed across the regression line (Can be checked using the Residual vs. Fitted value scatter plot. The plot must have to discernable pattern)"),
+                                 h4("Autocorrelation: Residuals must be independent of each other (Can be checked using Durbin-Watson’s test)."),
+                                 br(),
+                                 h4(em("Advantages")),
+                                 h4("-It is very useful in identifying and understanding the correlation between the response and predictor variables."),
+                                 h4("-It requires relatively low computational power compared to other supervised learning models"),
+                                 br(),
+                                 h4(em("Disdvantages")),
+                                 h4("-It is very sensitive to outliers, which leads to low accuracy."),
+                                 h4("-It is prone to underfitting of the data."),
+                                 h4("-It sometimes lacks practicality because most real world problems are not linear."),
+                             
+                                 ),
+                        tabPanel("Regression Tree",
+                                 h4("Regression tree is a tree based method where the predictor space is split into distinct and non-overlapping regions, with each region having different predictions."),
+                                 h4("The mean of the observations in a given region us usually used as the prediction "),
+                                 h4("The aim here is to find regions that minimize the Residual Sum of Squares:"),
+                                 br(),
+                                 withMathJax(
+                                     helpText('$$\\sum_{j=1}^J\\sum_{i\\in Rj} (y_i - \\hat{y}_{R_j})^2$$')
+                                 ),
+                                 br(),
+                                 h4("Rj is the jth region, y hat is the mean on the observations in a given region."),
+                                 br(),
+                                 h4(em("Advantages")),
+                                 h4("-It requires less data preparation during pre-processing."),
+                                 h4("-It is easy to explain to stakeholders."),
+                                 h4("-Data normalization and scaling is not required "),
+                                 br(),
+                                 h4(em("Disdvantages")),
+                                 h4("-It requires more time to train the model."),
+                                 h4("-It is relatively expensive and time consuming."),
+                                 h4("-It is prone to overfitting of the data."),
+                                 
+                        ),       
+                        tabPanel("Random Forest Model",
+                                 h4("Random Forests uses a large number of decision trees to produce a model prediction. It can improve prediction by using bootstrapping to generate a number of prediction candidates from each tree node, and then uses the entire ensemble to produce
+                                    a robust prediction model. The prediction advantage from random forests is further enhanced by random forests resulting in prediction models having lower variance than a bagged tree model."),
+                                 br(),
+                                 h4(em("Advantages")),
+                                 h4("-It can be applied to both classification and regression problems."),
+                                 h4("-It improves accuracy by reducing overfitting in regression trees."),
+                                 br(),
+                                 h4(em("Disdvantages")),
+                                 h4("-It requires a lot of computational power to build the trees."),
+                                 h4("-It suffers from lack ot interpretability."),
+                                 
+                        )       
                         ),
+                    ),
                         
                     #Model Fitting tab
                     tabPanel("Model Fitting", 
