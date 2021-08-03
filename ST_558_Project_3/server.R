@@ -10,13 +10,6 @@ data  <-  data %>% mutate(data,Concrete_Comp_strength_cat =
 data$Concrete_Comp_strength_cat <- factor(data$Concrete_Comp_strength_cat, levels=c("Low Compressive Strength", "High Compressive Strength"))
 
 
-#Doing a 70:30 split for training/testing
-set.seed(365)
-train  <-  sample(1:nrow(data), size = 0.7*nrow(data))
-test  <- setdiff(1:nrow(data), train)
-data_Train <- data[train, ]
-data_Test <- data[test, ]
-
 shinyServer(function(input, output, session) {
   #Create the data table for the Data page
   getData_Data_Page <- reactive({
@@ -161,6 +154,65 @@ shinyServer(function(input, output, session) {
     
     Num_Sum_Tab
   }, rownames = TRUE, colnames = TRUE, striped=TRUE, width = NULL)
+  
+  
+  #Doing a split for training/testing based on the user's choice
+  
+    data_split <- reactive({
+      set.seed(365)
+      train <- sample(1:nrow(data),size = input$data_train*nrow(data))
+      data_Train <- data[train, ]
+      data_Test <- data[test, ]
+      return(list(Train=data_Train, Test=data_Test))
+    })
+  
+    # Regression model
+ 
+    reg_model <- reactive({
+      if (length(input$variables)==0){
+        return(formula(paste0(input$Response,"~", "Cement +Blast_Furnace_Slag +Fly_Ash +Water +Superplasticizer +Coarse_Aggregate  +Fine_Aggregate+Age")))
+      } else{
+        n <- length(input$variables)
+        red_model <- paste0(input$variables,c(rep("+",n-1),""))
+        red_model <- paste0(red_model, collapse = "")
+        return(formula(paste0(input$Response, '~', red_model)))
+      }
+    })
+    
+    # Fit the Multiple Linear Regression model
+    fit_mlr <- eventReactive(input$run_mlr,{
+      fit.mlr <- lm(reg_model(), data = data_split()[["Train"]])
+      return(fit.mlr)
+    })
+    
+    # Output for mlr
+    output$output_mlr <- renderPrint({
+      if (input$run_mlr){
+        summary(fit_mlr())
+      }
+    })
+    
+    # Fit the Random Forest model
+    
+    fit_rf <- eventReactive(input$run_rf,{
+      trctrl <- trainControl(method = "repeatedcv", number=input$cv_fold, repeats=3)
+      rf_grid <- expand.grid(mtry = 1:11)
+      rf_train <- train(reg_model(), 
+                        data = data_split()[["Train"]], 
+                        method='rf', 
+                        trControl=trctrl,
+                        tuneGrid = rf_grid,
+                        preProcess=c("center", "scale"))
+      return(rf_train)
+    })
+    
+    
+    # Output for rf
+    output$output_rf <- renderPrint({
+      if (input$run_rf){
+        fit_rf()[["results"]]
+      }
+    })
   
 })
 

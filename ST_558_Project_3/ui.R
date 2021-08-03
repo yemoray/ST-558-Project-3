@@ -10,18 +10,11 @@ data  <-  data %>% mutate(data,Concrete_Comp_strength_cat =
 data$Concrete_Comp_strength_cat <- factor(data$Concrete_Comp_strength_cat, levels=c("Low Compressive Strength", "High Compressive Strength"))
 
 
-#Doing a 70:30 split for training/testing
-set.seed(365)
-train  <-  sample(1:nrow(data), size = 0.7*nrow(data))
-test  <- setdiff(1:nrow(data), train)
-data_Train <- data[train, ]
-data_Test <- data[test, ]
-
 var_names = names(data %>% select(-Concrete_Comp_strength_cat))
 
 not_sel <- "Not Selected"
 
-modelChoices = c("Multiple Linear Regression", "Bagged Tree", "Random Forest")
+modelChoices = c("Multiple Linear Regression", "Regression Tree", "Random Forest")
 
 
 #Create the UI dashboard
@@ -50,7 +43,9 @@ dashboardPage(skin = "green",
             tabItem(tabName = "about",
                 h3(strong("Purpose of this app")),
                 box(background = "blue", width=12, 
-                    h4("This app enables the user to run exploratory data analyses, fit supervised learning models and run predictions on the target variable from the",a("Concrete Compressive Strength Data Set",style="color:#ffa500",href="https://archive.ics.uci.edu/ml/datasets/Concrete+Compressive+Strength"), "donated by Prof. I-Cheng Yeh (Chung-Hua University, Taiwan) to the UCI Machine Learning Repository."),
+                    h4("This app enables the user to run exploratory data analyses, fit supervised learning models and run predictions on the target variable from
+                       the",a("Concrete Compressive Strength Data Set",style="color:#ffa500",href="https://archive.ics.uci.edu/ml/datasets/Concrete+Compressive+Strength"), "donated by
+                       Prof. I-Cheng Yeh (Chung-Hua University, Taiwan) to the UCI Machine Learning Repository."),
                     br(),
                     h4("The dataset contains the following variables:"),
                     br(),
@@ -247,7 +242,117 @@ dashboardPage(skin = "green",
                         
                     #Model Fitting tab
                     tabPanel("Model Fitting", 
+                             tabsetPanel(
+                                 tabPanel("Multiple Linear Regression",
+                                          sidebarLayout(
+                                              
+                                              sidebarPanel(
+                                                  #ui input for data split
+                                                  column(width = 12,
+                                                  
+                                                  box(width = 12,
+                                                      sliderInput("data_train", "Select proportion of data for training", 0.01, 1, 0.01)
+                                                  ),
+                                                  
+                                                  # Select the Response
+                                                  box(width = 12,
+                                                      selectInput(inputId = "Response",
+                                                                  label = "There is only one choice here:",
+                                                                  choices = c("Concrete_compressive_strength")
+                                                      ),
+                                                      
+                                                  ),
+                                                  
+                                                  # Select variables
+                                                  box(width = 12,
+                                                      selectInput(inputId = "variables",
+                                                                  label = "Please select variables for the MLR model:",
+                                                                  choices = var_names, multiple = T
+                                                      ),
+                                                      h6("All variables are selected by default")
+                                                  ),
+
+                                                  # Input to run the mlr
+                                                  box(width = 12,
+                                                      actionButton("run_mlr", "Fit the mlr model"),
+                                                  )
+                                              ),
+                                              ),
+                                              mainPanel(
+                                                  box(width = 12,
+                                                      column(4,
+                                                             h4("Multiple Linear Regression:"),
+                                                             verbatimTextOutput("output_mlr")
+                                                      ),
+                                                      
+                                                  )
+                                              )
+                                    ),
+                                 ),
+                                 
+                                 
+                                 
+                                 tabPanel("Random Forest Model",
+                                          sidebarLayout(
+                                              
+                                              sidebarPanel(
+                                                  #ui input for data split
+                                                  column(width = 12,
+                                                         
+                                                         box(width = 12,
+                                                             sliderInput("data_train", "Select proportion of data for training", 0.01, 1, 0.01)
+                                                         ),
+                                                         
+                                                         # Select the Response
+                                                         box(width = 12,
+                                                             selectInput(inputId = "Response",
+                                                                         label = "There is only one choice here:",
+                                                                         choices = c("Concrete_compressive_strength")
+                                                             ),
+                                                             
+                                                         ),
+                                                         
+                                                         # Select variables
+                                                         box(width = 12,
+                                                             selectInput(inputId = "variables",
+                                                                         label = "Please select variables for the RF model:",
+                                                                         choices = var_names, multiple = T
+                                                             ),
+                                                             h6("All variables are selected by default")
+                                                         ),
+                                                         
+                                                         # Cross-validation
+                                                         box(width = 12,
+                                                             sliderInput("cv_fold", "Cross validation folds:",
+                                                                         2,10,1)
+                                                         ),
+                                                         
+                                                         # Input to run the Random Forest Model
+                                                         box(width = 12,
+                                                             actionButton("run_rf", "Fit the Random Forest model"),
+                                                         )
+                                                  ),
+                                              ),
+                                              mainPanel(
+                                                  box(width = 12,
+                                                      column(4,
+                                                             h4("Random Forest:"),
+                                                             verbatimTextOutput("output_rf")
+                                                      ),
+                                                  )
+                                              )
+                                 ),       
+                             ),
+                             
+                             tabPanel("Regression Tree",
+                                      
+                             )
+                             )
+                             
+                             
                         ),
+                    
+                    
                         
                     #Prediction tab
                     tabPanel("Prediction",
