@@ -1,5 +1,5 @@
 #Required Packages
-packages <- c("shiny","shinydashboard","shinybusy","tidyverse", "ggplot2","DT","readr","knitr","dplyr","gbm","randomForest","caret","tree", "plotly","class")
+packages <- c("shiny","shinydashboard","shinybusy","tidyverse", "ggplot2","DT","readr","knitr","dplyr","gbm","randomForest","caret","tree", "plotly","class", "rpart", "rpart.plot")
 lapply(packages, library, character.only = TRUE)
 
 #Read in the dataset and categorize the compressive strength
@@ -214,6 +214,27 @@ shinyServer(function(input, output, session) {
       }
     })
   
+    # Fit the Regression Tree model
+    
+    fit_rt <- eventReactive(input$run_rt,{
+      tree_fit <- rpart(
+        formula = reg_model(),
+        data = data_split()[["Train"]],
+        method="anova", #for regression tree
+        control=rpart.control(minsplit=30,cp=0.001))
+        tree_cp <- printcp(tree_fit)
+      
+      return(tree_cp)
+      
+    })
+    
+    
+    # Output for rt
+    output$output_rt <- renderPrint({
+      if (input$run_rt){
+        fit_rt()
+      }
+    })
 })
 
 

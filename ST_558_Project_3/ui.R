@@ -324,7 +324,7 @@ dashboardPage(skin = "green",
                                                          # Cross-validation
                                                          box(width = 12,
                                                              sliderInput("cv_fold", "Cross validation folds:",
-                                                                         2,10,1)
+                                                                         1,10,1)
                                                          ),
                                                          
                                                          # Input to run the Random Forest Model
@@ -345,6 +345,50 @@ dashboardPage(skin = "green",
                              ),
                              
                              tabPanel("Regression Tree",
+                                      sidebarLayout(
+                                          
+                                          sidebarPanel(
+                                              #ui input for data split
+                                              column(width = 12,
+                                                     
+                                                     box(width = 12,
+                                                         sliderInput("data_train", "Select proportion of data for training", 0.01, 1, 0.01)
+                                                     ),
+                                                     
+                                                     # Select the Response
+                                                     box(width = 12,
+                                                         selectInput(inputId = "Response",
+                                                                     label = "There is only one choice here:",
+                                                                     choices = c("Concrete_compressive_strength")
+                                                         ),
+                                                         
+                                                     ),
+                                                     
+                                                     # Select variables
+                                                     box(width = 12,
+                                                         selectInput(inputId = "variables",
+                                                                     label = "Please select variables for the RT model:",
+                                                                     choices = var_names, multiple = T
+                                                         ),
+                                                         h6("All variables are selected by default")
+                                                     ),
+                                                     
+                                                     
+                                                     # Input to run the Regression Tree Model
+                                                     box(width = 12,
+                                                         actionButton("run_rt", "Fit the Regression Tree model"),
+                                                     )
+                                              ),
+                                          ),
+                                          mainPanel(
+                                              box(width = 12,
+                                                  column(4,
+                                                         h4("Regression Tree:"),
+                                                         verbatimTextOutput("output_rt")
+                                                  ),
+                                              )
+                                          )
+                                      ),       
                                       
                              )
                              )
