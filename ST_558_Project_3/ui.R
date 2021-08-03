@@ -388,19 +388,107 @@ dashboardPage(skin = "green",
                                                   ),
                                               )
                                           )
-                                      ),       
+                                    ),       
                                       
-                             )
-                             )
+                        )
+                    )
                              
                              
-                        ),
+                ),
                     
                     
                         
                     #Prediction tab
                     tabPanel("Prediction",
-                            )
+                             sidebarLayout(
+                                 
+                                 sidebarPanel(
+                                     column(width = 12,
+                                            br(),
+                                            
+                                            # Select the Model
+                                            box(width = 12,
+                                                h4("You can select a model to predict:"),
+                                                radioButtons(inputId = "model_select",
+                                                             label = "",
+                                                             choices = c("Multiple Linear Regression","Random Forest", "Regression Tree"),
+                                                             selected = "Multiple Linear Regression")
+                                            ),
+                                            
+                                            
+                                            
+                                            # Cement
+                                            box(width = 12,
+                                                sliderInput("Cement", "Select the value for cement",
+                                                            min = 1, max = 600, value = 200, step = 1)
+                                            ),
+                                            
+                                            # Blast Furnace Slag
+                                            box(width = 12,
+                                                sliderInput("Blast_Furnace_Slag", "Select the value for Blast Furnace Slag",
+                                                            min = 0, max = 400, value = 10, step = 1)
+                                            ),
+                                            
+                                            # Fly Ash
+                                            box(width = 12,
+                                                sliderInput("Fly_Ash", "Select the value for Fly Ash",
+                                                            min = 1, max = 300, value = 50, step = 1)
+                                            ),
+                                            
+                                            # Water
+                                            box(width = 12,
+                                                sliderInput("Water", "Select the value for Water",
+                                                            min = 1, max = 400, value = 50, step = 1)
+                                            ),
+                                            
+                                            # Superplasticizer
+                                            box(width = 12,
+                                                sliderInput("Superplasticizer", "Select the value for Superplasticizer",
+                                                            min = 1, max = 50, value = 2, step = 1)
+                                            ),
+                                            
+                                            # Coarse Aggregate
+                                            box(width = 12,
+                                                sliderInput("Coarse_Aggregate", "Input the value of Coarse Aggregate",
+                                                            min = 10, max = 2000, value = 200, step = 10)
+                                            ),
+                                            
+                                            # Fine Aggregate
+                                            box(width = 12,
+                                                sliderInput("Fine_Aggregate", "Input the value of Fine Aggregate",
+                                                            min = 10, max = 2000, value = 200, step = 10)
+                                            ),
+                                            
+                                            # Age
+                                            box(width = 12,
+                                                sliderInput("Age", "Input the value of Age",
+                                                            min = 1, max = 365, value = 10, step = 1)
+                                            ),
+                                            
+                                            # Predict Button
+                                            box(width = 12,
+                                                h4(strong("Tip: Run the model choice before hitting this button")),
+                                                actionButton("prebutton", "Click to run the prediction")
+                                            ),
+                                            
+                                     ),
+                                 ),
+                                     mainPanel(
+                                         column(width = 9,
+                                                br(),
+                                               h1("The predicted value for compression strength is:"),
+                                                verbatimTextOutput("predict")
+                                             )
+                                         )
+                                     )
+                                     
+                                            
+                                     )
+                            
+                             
+                            
+                    
+                    
                 )#End tab set panel
             )#End Modeling Page content
         )#End tab items
